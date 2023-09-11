@@ -1,12 +1,12 @@
 [package]
-name = "test"
+name = "spl-vault"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "test"
+name = "spl_vault"
 
 [features]
 no-entrypoint = []
@@ -16,5 +16,5 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.28.0"
-anchor-spl = "0.28.0"
+anchor-lang = {version = "^0.26.0", features = ["init-if-needed"]}
+anchor-spl = "0.26.0"

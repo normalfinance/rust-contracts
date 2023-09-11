@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button, input {
+  border: 1px solid black;
+  padding: 5px 10px;
+  width: fit-content;
+}
+
+.wallet-adapter-button-trigger {
+  background-color: #512da8;
+}
