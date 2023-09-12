@@ -1,11 +1,11 @@
 import { BN, Program } from '@project-serum/anchor';
 import { WalletContextState } from '@solana/wallet-adapter-react';
-import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { SplVault } from 'idl/spl_vault';
 import { getCreateUserInstruction, getDrainInstruction, getFundInstruction, getInitializeVaultInstruction } from './instructions';
 // import { getUserPda } from './utils';
 import { VAULT_NAME } from 'config';
-import { NATIVE_MINT, createCloseAccountInstruction, createSyncNativeInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
+import { ACCOUNT_SIZE, NATIVE_MINT, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createCloseAccountInstruction, createInitializeAccountInstruction, createTransferInstruction, getAssociatedTokenAddressSync, getMinimumBalanceForRentExemptAccount } from '@solana/spl-token';
 
 export async function callCreateUser(
   wallet: WalletContextState,
@@ -60,22 +60,35 @@ export async function fund(
   if (!wallet.publicKey) return;
   try {
     const transaction = new Transaction();
+    const newAccount = Keypair.generate();
     if (tokenMint.toString() === NATIVE_MINT.toString()) {
       const ata = getAssociatedTokenAddressSync(NATIVE_MINT, wallet.publicKey);
+      const ataData = await program.provider.connection.getAccountInfo(ata);
+      if (!ataData) {
+        transaction.add(createAssociatedTokenAccountInstruction(wallet.publicKey, ata, wallet.publicKey, NATIVE_MINT));
+      }
       transaction.add(
-        SystemProgram.transfer({
+        SystemProgram.createAccount({
           fromPubkey: wallet.publicKey,
-          toPubkey: ata,
-          lamports: amount.toNumber(),
+          newAccountPubkey: newAccount.publicKey,
+          space: ACCOUNT_SIZE,
+          lamports: (await getMinimumBalanceForRentExemptAccount(program.provider.connection)) + amount.toNumber(),
+          programId: TOKEN_PROGRAM_ID,
         }),
-        createSyncNativeInstruction(ata),
-      )
+        createInitializeAccountInstruction(
+          newAccount.publicKey,
+          NATIVE_MINT,
+          wallet.publicKey,
+        ),
+        createTransferInstruction(newAccount.publicKey, ata, wallet.publicKey, amount.toNumber()),
+        createCloseAccountInstruction(newAccount.publicKey, wallet.publicKey, wallet.publicKey),
+      );
     }
     transaction.add(
       await getFundInstruction(program, wallet.publicKey, name, tokenMint, amount)
     );
 
-    const txSignature = await wallet.sendTransaction(transaction, program.provider.connection, { skipPreflight: true });
+    const txSignature = await wallet.sendTransaction(transaction, program.provider.connection, { skipPreflight: true, signers: tokenMint.toString() === NATIVE_MINT.toString() ? [newAccount] : [] });
     await program.provider.connection.confirmTransaction(txSignature, "confirmed");
     return txSignature;
   } catch (error) {
@@ -94,13 +107,22 @@ export async function drain(
   if (!wallet.publicKey) return;
   try {
     const transaction = new Transaction();
+    const ata = getAssociatedTokenAddressSync(tokenMint, wallet.publicKey);
+
+    if (tokenMint.toString() === NATIVE_MINT.toString()) {
+      const ataData = await program.provider.connection.getAccountInfo(ata);
+      if (!ataData) {
+        transaction.add(
+          createAssociatedTokenAccountInstruction(wallet.publicKey, ata, wallet.publicKey, NATIVE_MINT)
+        );
+      }
+    }
 
     transaction.add(
       await getDrainInstruction(program, wallet.publicKey, name, tokenMint, amount)
     );
 
     if (tokenMint.toString() === NATIVE_MINT.toString()) {
-      const ata = getAssociatedTokenAddressSync(tokenMint, wallet.publicKey);
       transaction.add(
         createCloseAccountInstruction(
           ata,
