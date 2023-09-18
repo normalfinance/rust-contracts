@@ -29,6 +29,27 @@ export type SplVault = {
       ]
     },
     {
+      "name": "adjustFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "createUser",
       "accounts": [
         {
@@ -88,22 +109,7 @@ export type SplVault = {
           "isSigner": false
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -119,13 +125,18 @@ export type SplVault = {
       "name": "drain",
       "accounts": [
         {
-          "name": "drainer",
-          "isMut": true,
+          "name": "authority",
+          "isMut": false,
           "isSigner": true
         },
         {
+          "name": "drainer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -160,6 +171,42 @@ export type SplVault = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "collectFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authorityAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -171,6 +218,26 @@ export type SplVault = {
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastFeeCollection",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "feeAssets",
+            "type": {
+              "vec": {
+                "defined": "Asset"
+              }
+            }
           },
           {
             "name": "bump",
@@ -259,6 +326,27 @@ export const IDL: SplVault = {
       ]
     },
     {
+      "name": "adjustFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "createUser",
       "accounts": [
         {
@@ -318,22 +406,7 @@ export const IDL: SplVault = {
           "isSigner": false
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -349,13 +422,18 @@ export const IDL: SplVault = {
       "name": "drain",
       "accounts": [
         {
-          "name": "drainer",
-          "isMut": true,
+          "name": "authority",
+          "isMut": false,
           "isSigner": true
         },
         {
+          "name": "drainer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -390,6 +468,42 @@ export const IDL: SplVault = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "collectFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authorityAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -401,6 +515,26 @@ export const IDL: SplVault = {
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastFeeCollection",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "feeAssets",
+            "type": {
+              "vec": {
+                "defined": "Asset"
+              }
+            }
           },
           {
             "name": "bump",

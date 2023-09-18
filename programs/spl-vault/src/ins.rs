@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    token::{Mint, TokenAccount, Token},
-    associated_token::AssociatedToken,
-};
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::state::*;
 
@@ -13,7 +10,7 @@ pub struct InitializeVault<'info> {
     pub authority: Signer<'info>,
 
     #[account(
-        init,
+        init_if_needed,
         payer = authority,
         space = Vault::LEN + 8,
         seeds = [
@@ -25,6 +22,22 @@ pub struct InitializeVault<'info> {
     pub vault: Account<'info, Vault>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateVault<'info> {
+    #[account(mut, address = vault.authority)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"vault".as_ref(),
+            vault.name.as_ref(),
+        ],
+        bump = vault.bump,
+    )]
+    pub vault: Account<'info, Vault>,
 }
 
 #[derive(Accounts)]
@@ -86,8 +99,7 @@ pub struct Fund<'info> {
     pub mint: Account<'info, Mint>,
 
     #[account(
-        init_if_needed,
-        payer = funder,
+        mut,
         associated_token::authority = vault,
         associated_token::mint = mint,
     )]
@@ -100,21 +112,19 @@ pub struct Fund<'info> {
     )]
     pub funder_ata: Account<'info, TokenAccount>,
 
-    pub system_program: Program<'info, System>,
-
     pub token_program: Program<'info, Token>,
-
-    pub associated_token_program: Program<'info, AssociatedToken>,
-
-    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
 pub struct Drain<'info> {
+    #[account(address = vault.authority)]
+    pub authority: Signer<'info>,
+
     #[account(mut, address = user.key)]
-    pub drainer: Signer<'info>,
+    pub drainer: SystemAccount<'info>,
 
     #[account(
+        mut,
         seeds = [
             b"vault".as_ref(),
             vault.name.as_ref(),
@@ -150,6 +160,40 @@ pub struct Drain<'info> {
         associated_token::mint = mint,
     )]
     pub drainer_ata: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CollectFee<'info> {
+    #[account(mut, address = vault.authority)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"vault".as_ref(),
+            vault.name.as_ref(),
+        ],
+        bump = vault.bump,
+    )]
+    pub vault: Account<'info, Vault>,
+    
+    pub mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        associated_token::authority = vault,
+        associated_token::mint = mint,
+    )]
+    pub vault_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        associated_token::authority = authority,
+        associated_token::mint = mint,
+    )]
+    pub authority_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 }

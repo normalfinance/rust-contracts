@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.devnet]
-spl_vault = "46GUjqKJPkWfPeqccSjGBAyP2CWBpTSj29LSPpaxRQvN"
+spl_vault = "3xcvmiofhKuBLp7uJCxLafRkeemhx1EJBpYN7B6ZCR9D"
 
 [registry]
 url = "https://api.apr.dev"

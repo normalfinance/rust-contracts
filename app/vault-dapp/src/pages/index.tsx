@@ -2,20 +2,22 @@
 import { BN } from '@project-serum/anchor';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useProgram from 'hooks/useProgram';
-import { fund, drain, callCreateUser } from 'libs/methods';
+import { fund, callCreateUser } from 'libs/methods';
 import { useEffect, useState } from 'react';
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useFetchVault from 'hooks/useFetchVault';
 import { VAULT_NAME } from 'config';
 import { PublicKey } from '@solana/web3.js';
 import { NATIVE_MINT, getMint } from '@solana/spl-token';
+import { getDecimals } from 'libs/utils';
 
 export default function Home() {
   const wallet = useWallet();
   const program = useProgram();
   const [reload, setReload] = useState({});
-  const [name] = useState(VAULT_NAME);
-  const { vault, user } = useFetchVault(reload, name);
+  const [name, setName] = useState(VAULT_NAME);
+  const [admin] = useState(false);
+  const { vault, vaults, user, mints } = useFetchVault(reload, name, admin);
   const [isSol, setIsSol] = useState(true);
   const [tokenAddress, setTokenAddress] = useState(NATIVE_MINT.toString());
   const [decimals, setDecimals] = useState(1e9);
@@ -30,15 +32,8 @@ export default function Home() {
 
   const handleFund = async () => {
     if (!program || !vault) return;
-    console.log(amount, decimals);
+
     await fund(wallet, program, VAULT_NAME, new PublicKey(tokenAddress.trim()), new BN(amount * decimals));
-    setReload({});
-  }
-
-  const handleDrain = async () => {
-    if (!program || !vault) return;
-
-    await drain(wallet, program, VAULT_NAME, new PublicKey(tokenAddress.trim()), new BN(amount * decimals));
     setReload({});
   }
 
@@ -65,6 +60,14 @@ export default function Home() {
       <div>
         <WalletMultiButton />
       </div>
+      <div>
+        Vault Name:
+        <select value={name} onChange={(e) => setName(e.target.value)}>
+          {vaults.map(vault => (
+            <option key={vault.name} value={vault.name}>{vault.name}</option>
+          ))}
+        </select>
+      </div>
       {!user
         ? <button onClick={handleCreateUser}>Create User</button>
         : <>
@@ -84,8 +87,7 @@ export default function Home() {
           {user.assets.filter(asset => asset.amount.toNumber()).map(asset => (
             <div className='flex gap-2 items-center' key={asset.mint.toString()}>
               <div className='w-[500px]'>{asset.mint.toString()}</div>
-              <div className='w-[50px]'>{asset.amount.toNumber() / (asset.decimals || 1)}</div>
-              <button onClick={handleDrain}>Drain</button>
+              <div className='w-[50px]'>{asset.amount.toNumber() / getDecimals(mints, asset.mint)}</div>
             </div>
           ))}
         </>

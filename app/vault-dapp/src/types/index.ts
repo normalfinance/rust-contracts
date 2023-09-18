@@ -3,6 +3,10 @@ import { BN } from '@project-serum/anchor';
 
 export type VaultData = {
   name: string,
+  authority: PublicKey,
+  lastFeeCollection: BN,
+  fee: BN,
+  feeAssets: Asset[],
   bump: number,
 }
 
@@ -16,5 +20,9 @@ export type UserData = {
 export type Asset = {
   mint: PublicKey;
   amount: BN;
-  decimals?: number;
+}
+
+export type Mint = {
+  mint: PublicKey;
+  decimals: number;
 }

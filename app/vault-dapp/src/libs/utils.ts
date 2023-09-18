@@ -1,5 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import idl from 'idl/spl_vault.json';
+import { Mint } from 'types';
 
 export const getVaultPda = (
   name: string,
@@ -29,3 +30,9 @@ export const getUserPda = (
     programId
   );
 };
+
+export const getDecimals = (mints: Array<Mint>, mint: PublicKey) => {
+  const index = mints.map(mint => mint.mint.toString()).indexOf(mint.toString());
+  if (!mints[index]) return 1;
+  return mints[index].decimals;
+}

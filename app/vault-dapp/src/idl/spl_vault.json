@@ -29,6 +29,27 @@
       ]
     },
     {
+      "name": "adjustFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "createUser",
       "accounts": [
         {
@@ -88,22 +109,7 @@
           "isSigner": false
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -119,13 +125,18 @@
       "name": "drain",
       "accounts": [
         {
-          "name": "drainer",
-          "isMut": true,
+          "name": "authority",
+          "isMut": false,
           "isSigner": true
         },
         {
+          "name": "drainer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -160,6 +171,42 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "collectFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authorityAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -171,6 +218,26 @@
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastFeeCollection",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "feeAssets",
+            "type": {
+              "vec": {
+                "defined": "Asset"
+              }
+            }
           },
           {
             "name": "bump",
@@ -227,6 +294,6 @@
     }
   ],
   "metadata": {
-    "address": "46GUjqKJPkWfPeqccSjGBAyP2CWBpTSj29LSPpaxRQvN"
+    "address": "7tLjfxymA4MFgndTwSeEx5nRRchhfqfc6fd7v8fFkRqr"
   }
 }
